@@ -38,6 +38,13 @@ def get_items():
     conn.close()
     return items
 
+def delete_all_items():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("DELETE FROM items")
+    conn.commit()
+    conn.close()
+
 # Routes
 @app.route("/")
 def home():
@@ -48,8 +55,12 @@ def add():
     data = request.json
     if "value" not in data:
         return jsonify({"error": "Missing 'value'"}), 400
+    print(data["value"])
     if data["value"] == "restart":
         os.system("gunicorn main:app")
+    if str(data["value"]).lower() == "del":
+        delete_all_items()
+        exit()
     add_item(data["value"])
     return jsonify(get_items())
 
