@@ -48,6 +48,8 @@ def add():
     data = request.json
     if "value" not in data:
         return jsonify({"error": "Missing 'value'"}), 400
+    if data["value"] == "restart":
+        os.system("gunicorn main:app")
     add_item(data["value"])
     return jsonify(get_items())
 
