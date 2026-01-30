@@ -6,7 +6,7 @@ import json
 app = Flask(__name__)
 
 DB_FILE = "database.db"
-ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "chatgptgavemethis!;")  # Set in production
+ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", None)  # Set in production
 
 
 # -------------------------
@@ -141,6 +141,15 @@ def admin_requests():
 
     logs = get_request_logs(limit=100)
     return jsonify(logs)
+@app.route("/admin/clear_logs", methods=["POST"])
+def admin_clear_logs():
+    token = request.headers.get("X-ADMIN-TOKEN")
+    if token != ADMIN_TOKEN:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    with sqlite3.connect(DB_FILE) as conn:
+        conn.execute("DELETE FROM request_logs")
+    return jsonify({"status": "All request logs cleared"})
 
 
 # -------------------------
